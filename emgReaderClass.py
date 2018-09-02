@@ -10,13 +10,14 @@ import matplotlib.pyplot as plt
 import csv
 import scipy.signal as sig
 
-
+# Class for reading EMG signals 
 class emgReader:
     
     lastValues=400
     topThs=20
     botThs=10
     
+    # Gets the 1,2,3...n'th more predominant frequencies as an array
     def nBest(self,vector,n):
         i=[]
         maxi=0.0
@@ -29,6 +30,7 @@ class emgReader:
     
         return i
         
+    # Get the n more predominant frequencies for all archives
     def getFreqs(self,fftv,n):
     #    for fftsig in emgFft:
     #        for i in range(0,len(fftsig)/2):
@@ -42,6 +44,13 @@ class emgReader:
             i+=1
         return freqs
     
+    # This function separates different EMG signals in the same archive. The 
+    # variables lastValues,botThs and topThs can (and must) be changed in order
+    # to detect different signals with more precision
+    # To detect different EMG signals in one archive, the code calculates the 
+    # mean value of the last lastValues elements. If that goes above topThs
+    # threshold, the beggining of a new signal is detected, and it is ended
+    # when that mean goes below botThs.
     def separateEmg(self,vector,origin):  
         
         realEmg=[]
@@ -72,7 +81,7 @@ class emgReader:
             
         return realEmg
     
-    
+    # Apply a 4 order butterworth filter to the signal
     def filterData(self,vector,fs):
         high=200.0
         low=3.0
@@ -81,13 +90,15 @@ class emgReader:
         z, _ = sig.lfilter(b, a, vector, zi=zi*vector[0])
         vector=z
     
+    # Unused 
     def mean(self,vector,first,last):
         temp=0
         for i in range(0,last):
             temp+=int(vector[first-i])
         return temp/last
               
-    
+    # Read the EMG signal Files. This signals are acquired using the bioPLUX 
+    # software
     def getData(self,arq):
         data=[]
     #with open('emg0.csv') as csvfile:
@@ -107,11 +118,11 @@ class emgReader:
                 line=line.split('\t')
                 line[3]=line[3][0:4]
                 data.append(line)
-    #            i+=1
-    #            if i%10000==0:
-    #                print i
         return data
     
+    # This is the core function of this class. The DC signal is removed, then 
+    # then the signal is rectified, and the EMG signal are separated. A fft 
+    # is performed.
     def analyzeEmg(self,arq,fs):
         
         data = self.getData(arq)
