@@ -21,6 +21,7 @@ class emgReader:
     
     # Gets the 1,2,3...n'th more predominant frequencies as an array
     def nBest(self,vector,n):
+
         i=[]
         maxi=0.0
         temp=[x for x in vector]
@@ -28,7 +29,7 @@ class emgReader:
         for j in range(0,n):
             maxi=np.nanargmax(temp)
             temp[maxi]=np.nan
-            i.append(maxi*fs/len(vector))
+            i.append(maxi*self.fs/len(vector))
     
         return i
         
@@ -102,10 +103,11 @@ class emgReader:
     # Read the EMG signal Files. This signals are acquired using the bioPLUX 
     # software
     
-    def getCsvData(self,muscle):
+    def getCsvData(self,muscle,folder):
+        global fs
         def getArqs():
             arqVec=[]
-            for arq in os.listdir('./csv/'):
+            for arq in os.listdir('./'+folder+'/'):
                 if os.path.splitext(arq)[1]=='.csv':
                     arqVec.append(arq)
             return arqVec
@@ -120,8 +122,7 @@ class emgReader:
                 while len(real)<int(arq[4:6]):
                     fftvec.append([])
                     real.append([])
-                with open('./csv/'+arq) as csvfile:
-                    global fs
+                with open('./'+folder+'/'+arq) as csvfile:
                     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
                     data = [float(c) for c in spamreader.next()[0].split(',')]
                     self.filterData(data,2000)
